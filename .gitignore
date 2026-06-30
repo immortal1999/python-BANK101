@@ -1,0 +1,27 @@
+# ─── Secrets (NEVER commit) ───────────────────────────────
+secrets.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ─── Databases / local data ───────────────────────────────
+*.db
+*.sqlite3
+backend/data/
+
+# ─── OS / editor ──────────────────────────────────────────
+.DS_Store
+.vscode/
+
+# ─── Docker / misc ────────────────────────────────────────
+*.log

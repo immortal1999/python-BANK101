@@ -1,0 +1,48 @@
+services:
+  api:
+    image: 292787658006.dkr.ecr.us-west-1.amazonaws.com/banking-app:latest
+    restart: unless-stopped          # survives reboots / crashes -> "always on"
+    env_file: .env                   # SECRET_KEY, DATABASE_URL, etc. (written by fetch-secrets.sh)
+    depends_on:
+      db:
+        condition: service_healthy   # wait until Postgres is ready before starting the app
+    expose:
+      - "8080"                       # internal to the docker network only (not public)
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}          # tier 1: superuser (dbadmin)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      BANKADMIN_PASSWORD: ${BANKADMIN_PASSWORD} # tier 2: read by init-db script
+      BANKAPP_PASSWORD: ${BANKAPP_PASSWORD}     # tier 3: read by init-db script
+    volumes:
+      - pgdata:/var/lib/postgresql/data         # database files persist on the EBS disk
+      - ./init-db:/docker-entrypoint-initdb.d:ro # role-creation script, runs on first init
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  caddy:
+    image: caddy:2                   # pulled straight from Docker Hub (auto-patched)
+    restart: unless-stopped
+    ports:
+      - "80:80"                      # needed for Let's Encrypt HTTP challenge + redirect
+      - "443:443"                    # public HTTPS
+    environment:
+      - DOMAIN=${DOMAIN}             # your DuckDNS domain, from .env (still injected at runtime)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data             # stores issued TLS certs -> must persist
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pgdata:

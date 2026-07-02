@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.v1.router import api_router
 from app.core.config import settings
 
 app = FastAPI(
@@ -15,10 +16,9 @@ def root():
 
 @app.get("/health")
 def health():
-    """Health check endpoint for App Runner / load balancers."""
+    """Health check endpoint for load balancers."""
     return {"status": "healthy"}
 
 
-# Routers will be included here as the API grows, e.g.:
-# from app.api.v1.router import api_router
-# app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+# All API v1 routes (auth, and future resources) live under /api/v1
+app.include_router(api_router, prefix=settings.API_V1_PREFIX)

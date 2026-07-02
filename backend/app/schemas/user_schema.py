@@ -2,46 +2,48 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
 
-## User schema for request and response validation 
-## must comply with Know Your Customer (KYC) regulations, 
-## AML(Anti-Money Laundering) laws, and data privacy standards.
+## User schema for request and response validation.
+## Must comply with KYC (Know Your Customer), AML (Anti-Money Laundering),
+## and data-privacy standards.
+
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str = Field(min=12, max=128)
-    full_name: str = Field (min=2, max=100)
+    username: str = Field(min_length=3, max_length=30)
+    password: str = Field(min_length=12, max_length=128)
+    full_name: str = Field(min_length=2, max_length=100)
     date_of_birth: date
-    address: str = Field (min=5, max=255)
-    phone_number: str = Field (min=10, max=20)
+    address: str = Field(min_length=5, max_length=255)
+    phone_number: str = Field(min_length=10, max_length=20)
 
 
 class UserUpdate(BaseModel):
-    email: EmailStr[Optional] = None
-    password: str[Optional] = None
-    full_name: str[Optional] = None
-    date_of_birth: date[Optional] = None
-    address: str[Optional] = None
-    phone_number: str[Optional] = None
+    email: Optional[EmailStr] = None
+    password: Optional[str] = Field(default=None, min_length=12, max_length=128)
+    full_name: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    address: Optional[str] = None
+    phone_number: Optional[str] = None
 
 
 class UserResponse(BaseModel):
     id: int
     email: str
+    username: str
     full_name: str
     date_of_birth: date
     address: str
     phone_number: str
 
+    role: str
     is_active: bool
 
-    kycstatus: str
-    amlstatus: str
+    kyc_status: str
+    aml_status: str
     risk_level: str
     kyc_verified_at: Optional[datetime] = None
     kyc_provider: Optional[str] = None
 
     class Config:
-        # allows to read from objects returned by ORM models (like SQLAlchemy)
-        # old Pydantic use orm_mode = True
+        # allow reading from ORM objects (SQLAlchemy models)
         from_attributes = True
-

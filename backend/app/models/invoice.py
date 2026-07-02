@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, Float, Date, ForeignKey
+from sqlalchemy import Column, DateTime, Integer, Numeric, String, Float, Date, ForeignKey
 from sqlalchemy.sql import func
 from app.db.database import Base
 
@@ -7,7 +7,7 @@ class Invoice(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    amount = Column(Float, nullable=False)
+    amount = Column(Numeric(18,2), nullable=False)
     status = Column(String(20), nullable=False)  # e.g., 'paid', 'unpaid', 'overdue'
     due_date = Column(Date, nullable=False)
     description = Column(String(255), nullable=True)

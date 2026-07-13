@@ -25,3 +25,4 @@ backend/data/
 
 # ─── Docker / misc ────────────────────────────────────────
 *.log
+node_modules/

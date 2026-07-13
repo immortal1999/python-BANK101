@@ -1,6 +1,13 @@
 # Caddy automatically obtains and renews a free Let's Encrypt TLS cert for this domain.
 # {$DOMAIN} is read from the environment (set in .env / docker-compose).
 {$DOMAIN} {
-    # Forward all traffic to the FastAPI container on the internal docker network.
-    reverse_proxy api:8080
+    handle /api/* {
+        reverse_proxy api:8080
+    }
+
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
 }

@@ -1,0 +1,57 @@
+/* Register page styles. Scoped under .auth-page so centering / full-width
+   buttons don't leak onto other pages (CSS imports are global in a React SPA). */
+
+.auth-page {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-height: 100vh;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 78% 16%, rgba(215,168,79,.22), transparent 32%),
+    radial-gradient(circle at 15% 85%, rgba(215,168,79,.1), transparent 28%),
+    var(--bg);
+  display: grid;
+  place-items: center;
+  padding: 28px;
+}
+
+.auth-shell{width:min(1180px,100%);display:grid;grid-template-columns:.95fr 1.05fr;min-height:760px;border:1px solid var(--line);border-radius:34px;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02));box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.12)}
+.brand-side{padding:38px;background:linear-gradient(145deg,#0a0a0a,#15120d);position:relative;overflow:hidden;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between}
+.brand-side:before{content:"";position:absolute;right:-120px;bottom:70px;width:360px;height:360px;border-radius:50%;background:rgba(215,168,79,.18);filter:blur(52px)}
+.brand{display:flex;align-items:center;gap:12px;font-size:23px;font-weight:900;position:relative;z-index:1}
+.brand-mark{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;color:#0b0b0b;font-weight:950;font-size:24px;background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));box-shadow:0 18px 40px rgba(215,168,79,.28)}
+.hero-copy{position:relative;z-index:1}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(215,168,79,.1);color:var(--gold-light);font-size:13px;font-weight:800;margin-bottom:20px}
+.hero-copy h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(42px,5vw,64px);line-height:.97;letter-spacing:-.05em;margin-bottom:22px}
+.hero-copy h1 span{color:var(--gold-light);text-shadow:0 0 36px rgba(215,168,79,.26)}
+.hero-copy p{color:var(--muted);line-height:1.75;font-size:17px;max-width:500px}
+.steps{display:grid;gap:14px;position:relative;z-index:1}
+.step{display:flex;gap:14px;align-items:center;padding:16px;border:1px solid rgba(215,168,79,.18);background:rgba(0,0,0,.26);border-radius:18px}
+.step-num{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#0b0b0b;background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));font-weight:900}
+.step strong{display:block}
+.step span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.form-side{padding:42px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.22)}
+.form-card{width:min(560px,100%)}
+.back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;margin-bottom:24px}
+.back-link:hover{color:var(--gold-light)}
+.form-card h2{font-family:Georgia,"Times New Roman",serif;font-size:42px;letter-spacing:-.04em;margin-bottom:10px}
+.form-card>p{color:var(--muted);line-height:1.65;margin-bottom:28px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.form-group{display:grid;gap:9px;margin-bottom:16px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:13px;color:var(--gold-light);font-weight:800}
+.field-error{color:#fb7185;font-size:12px;margin-top:6px}
+.input-wrap{display:flex;align-items:center;gap:10px;height:54px;border:1px solid rgba(215,168,79,.28);background:rgba(255,255,255,.04);border-radius:16px;padding:0 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.input-wrap span{color:var(--gold)}
+.input-wrap input,.input-wrap select{width:100%;height:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:15px}
+.input-wrap select option{background:#111;color:var(--text)}
+.input-wrap input::placeholder{color:#69635b}
+.checkbox{display:flex;align-items:flex-start;gap:10px;color:var(--muted);font-size:14px;line-height:1.5;margin:4px 0 22px}
+.checkbox input{width:17px;height:17px;margin-top:2px;accent-color:var(--gold);flex:0 0 auto}
+.checkbox a{color:var(--gold-light);font-weight:800}
+.auth-page .btn{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);padding:14px 18px;border-radius:999px;font-weight:800;cursor:pointer;transition:.2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.auth-page .btn:hover{transform:translateY(-2px);border-color:var(--gold)}
+.auth-page .btn-primary{color:#0d0b07;background:linear-gradient(135deg,var(--gold-light),var(--gold));border-color:transparent;box-shadow:0 18px 38px rgba(215,168,79,.24)}
+.alt-action{text-align:center;color:var(--muted);margin-top:20px}
+.alt-action a{color:var(--gold-light);font-weight:800}
+.demo-note{margin-top:20px;border:1px solid rgba(74,222,128,.22);background:rgba(74,222,128,.06);color:#bbf7d0;border-radius:16px;padding:14px;font-size:13px;line-height:1.55}
+@media(max-width:940px){.auth-page{padding:18px}.auth-shell{grid-template-columns:1fr}.brand-side{min-height:480px}.form-side{padding:34px 22px}.steps{margin-top:34px}.form-grid{grid-template-columns:1fr}}

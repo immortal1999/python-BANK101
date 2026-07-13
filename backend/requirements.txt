@@ -11,7 +11,7 @@ alembic==1.18.4
 psycopg2-binary==2.9.9        # PostgreSQL driver (RDS); not needed for local SQLite
 
 # Config / validation
-pydantic==2.13.4
+pydantic[email]==2.13.4        # [email] pulls email-validator (needed for EmailStr)
 pydantic-settings==2.14.1
 python-dotenv==1.2.2
 

@@ -37,6 +37,7 @@ services:
       - DOMAIN=${DOMAIN}             # your DuckDNS domain, from .env (still injected at runtime)
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv         # React build (Caddy serves this at /)
       - caddy_data:/data             # stores issued TLS certs -> must persist
       - caddy_config:/config
     depends_on:

@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
     '/api': {
-      target: 'https://aerial-bank.duckdns.org',
+      target: 'https://aureus-bank.duckdns.org',
       changeOrigin: true,
     }
     }

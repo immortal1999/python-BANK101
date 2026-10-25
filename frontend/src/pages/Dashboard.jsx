@@ -1,293 +1,265 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./dashboard.css";
+import { useEffect, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import {
+  ArrowRight, Bot, ChevronRight, CircleHelp, FileText, Landmark, PiggyBank, Sparkles,
+  TrendingDown, TrendingUp, WalletCards,
+} from "lucide-react";
+import { api, usd, fmtDate, fmtMonth, capitalize, INCOME_TYPES } from "../lib/api";
 
-const transactions = [
-  {
-    date: "Jun 06, 2024",
-    time: "09:41 AM",
-    description: "Payment from Horizon Ltd.",
-    account: "Operating Account •••• 6357",
-    amount: "+$1,260,000.00",
-    status: "Completed",
-    type: "income",
-  },
-  {
-    date: "Jun 05, 2024",
-    time: "03:15 PM",
-    description: "Invoice INV-2458",
-    account: "Receivables Account •••• 8841",
-    amount: "+$320,000.00",
-    status: "Completed",
-    type: "income",
-  },
-  {
-    date: "Jun 05, 2024",
-    time: "11:07 AM",
-    description: "Wire Transfer to Global Traders",
-    account: "Operating Account •••• 6357",
-    amount: "-$750,000.00",
-    status: "Completed",
-    type: "expense",
-  },
-  {
-    date: "Jun 04, 2024",
-    time: "02:33 PM",
-    description: "Interest Credit",
-    account: "Savings Account •••• 7732",
-    amount: "+$18,750.00",
-    status: "Completed",
-    type: "income",
-  },
+const ACCOUNT_STYLE = {
+  checking: { name: "Everyday Checking", icon: Landmark, tone: "blue", subtitle: "Available balance" },
+  savings: { name: "High-Yield Savings", icon: PiggyBank, tone: "green", subtitle: "4.20% APY" },
+};
+
+const QUICK_ACTIONS = [
+  { label: "View Accounts", detail: "Balances, account and routing numbers", icon: Landmark, tone: "gold", to: "/accounts" },
+  { label: "Manage Cards", detail: "Freeze, unfreeze and see card details", icon: WalletCards, tone: "blue", to: "/cards" },
+  { label: "View Statements", detail: "Monthly statements and CSV downloads", icon: FileText, tone: "slate", to: "/statements" },
+  { label: "Get Support", detail: "Open a ticket or contact a specialist", icon: CircleHelp, tone: "violet", to: "/support#ticket" },
 ];
 
-const navItems = [
-  "Dashboard",
-  "Accounts",
-  "Cards",
-  "Payments",
-  "Statements",
-  "Zelle",
-  "Audit Logs",
-  "Support",
-  "Logout",
-];
+function greeting(now) {
+  const h = now.getHours();
+  return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+}
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, accounts, openChat } = useOutletContext();
+  const [summary, setSummary] = useState(null);
+  const [txns, setTxns] = useState(null);
+  const [thisMonth, setThisMonth] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    // Totals, statements and transactions all come from the same backend rows (exact
+    // Decimal), so the balances, the insight and the activity list always agree.
+    api("/accounts/summary").then(setSummary).catch(() => {});
+    api("/accounts/transactions?limit=5").then(setTxns).catch(() => setTxns([]));
+    api("/accounts/statements?months=1").then((r) => setThisMonth(r.months[0] ?? null)).catch(() => {});
+  }, []);
 
-    async function fetchUser() {
-      const response = await fetch("/api/v1/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        setUser(await response.json());
-      } else {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
-    }
-    fetchUser();
-  }, [navigate]);
-
-  if (!user) {
-    return <div style={{ padding: 40 }}>Loading…</div>;
-  }
+  const now = new Date();
+  const savings = accounts.find((a) => a.account_type === "savings");
 
   return (
-    <div className="aureus-app">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-mark">A</div>
-          <div>
-            <h1>Aureus</h1>
-            <span>Banking</span>
-          </div>
+    <>
+      <section className="welcome dashboard-section">
+        <div>
+          <span className="eyebrow">Welcome back</span>
+          <h1>{greeting(now)}, {user.full_name.split(" ")[0]}</h1>
+          <p>Here’s a quick view of your accounts and recent activity.</p>
         </div>
+        <span className="date-label">
+          {now.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
+        </span>
+      </section>
 
-        <nav className="nav-list">
-          {navItems.map((item) => (
-            <button
-              key={item}
-              className={`nav-item ${item === "Dashboard" ? "active" : ""}`}
-            >
-              <span className="nav-icon">✦</span>
-              {item}
-            </button>
-          ))}
-        </nav>
-
-        <div className="private-card">
-          <div className="private-gem">◆</div>
-          <h3>Private Banking</h3>
-          <p>Tailored solutions for your success.</p>
-          <button>Contact Manager</button>
-        </div>
-      </aside>
-
-      <main className="dashboard">
-        <header className="topbar">
+      <section className="panel dashboard-section">
+        <div className="section-heading-row">
           <div>
-            <p className="eyebrow">Executive Banking Portal</p>
-            <h2>Dashboard</h2>
+            <h2>Your Accounts</h2>
+            {summary && <p>Total balance {usd(summary.total_assets)}</p>}
           </div>
+          <button className="text-link" onClick={() => navigate("/accounts")}>
+            View All Accounts <ArrowRight size={17} />
+          </button>
+        </div>
+        {accounts.length === 0 ? (
+          <div className="empty-state"><p>No accounts yet</p></div>
+        ) : (
+          <div className="account-grid">
+            {accounts.map((a) => <AccountCard key={a.id} account={a} onOpen={() => navigate(`/accounts/${a.id}`)} />)}
+          </div>
+        )}
+      </section>
 
-          <div className="topbar-actions">
-            <input placeholder="Search accounts, transactions, invoices..." />
-            <button className="icon-btn">🔔</button>
-            <div className="profile-chip">
-              <div className="avatar">{user.full_name.split(" ").map(n => n[0]).join("").toUpperCase()}</div>
-              <div>
-                <strong>{user.full_name}</strong>
-                <span>{user.role}</span>
-              </div>
+      <section className="dashboard-grid dashboard-section">
+        <div className="panel">
+          <div className="section-heading-row">
+            <div>
+              <h2>Quick Actions</h2>
+              <p>Manage accounts, cards and statements.</p>
             </div>
           </div>
-        </header>
-
-        <section className="hero-panel panel">
-          <div className="hero-copy">
-            <span className="premium-badge">★ Premium Client</span>
-            <h3>Welcome, {user.full_name.split(" ")[0]}.</h3>
-            <p>Here’s what’s happening with Aureus Banking today.</p>
-          </div>
-
-          <div className="manager-card">
-            <p>Relationship Manager</p>
-            <h4>Sophia Reynolds</h4>
-            <span>+1 (212) 555-8173</span>
-            <div className="manager-actions">
-              <button>✉</button>
-              <button>☎</button>
-            </div>
-          </div>
-        </section>
-
-        <section className="kpi-grid">
-          <div className="kpi-card panel">
-            <span className="kpi-icon blue">◆</span>
-            <p>Total Assets</p>
-            <h3>$248.75M</h3>
-            <small className="positive">▲ 8.62% vs last month</small>
-          </div>
-          <div className="kpi-card panel">
-            <span className="kpi-icon green">◆</span>
-            <p>Monthly Revenue</p>
-            <h3>$7.42M</h3>
-            <small className="positive">▲ 12.35% vs last month</small>
-          </div>
-          <div className="kpi-card panel">
-            <span className="kpi-icon purple">◆</span>
-            <p>Pending Invoices</p>
-            <h3>23</h3>
-            <small>$3.61M total value</small>
-          </div>
-          <div className="kpi-card panel">
-            <span className="kpi-icon teal">◆</span>
-            <p>Sync Status</p>
-            <h3>Synced</h3>
-            <small className="positive">Last sync: 2 min ago</small>
-          </div>
-        </section>
-
-        <section className="analytics-grid">
-          <div className="panel cashflow-panel">
-            <div className="panel-header">
-              <h3>Cash Flow</h3>
-              <span>Last 6 Months</span>
-            </div>
-            <div className="line-chart">
-              <div className="chart-grid"></div>
-              <svg viewBox="0 0 600 240" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="goldFill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#d9b86c" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#0e1726" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M0,190 C80,120 120,145 190,95 C270,40 330,150 410,85 C480,30 540,80 600,35 L600,240 L0,240 Z"
-                  fill="url(#goldFill)"
-                />
-                <path
-                  d="M0,190 C80,120 120,145 190,95 C270,40 330,150 410,85 C480,30 540,80 600,35"
-                  fill="none"
-                  stroke="#d9b86c"
-                  strokeWidth="5"
-                />
-              </svg>
-            </div>
-            <div className="chart-labels">
-              <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-            </div>
-          </div>
-
-          <div className="panel distribution-panel">
-            <div className="panel-header">
-              <h3>Account Distribution</h3>
-              <span>By Type</span>
-            </div>
-            <div className="donut-wrap">
-              <div className="donut">
-                <div>
-                  <strong>$248.75M</strong>
-                  <span>Total</span>
+          <div className="quick-grid">
+            {QUICK_ACTIONS.map(({ label, detail, icon: Icon, tone, to }) => (
+              <button key={label} className={`quick-action ${tone}`} onClick={() => navigate(to)}>
+                <div className="quick-action-icon"><Icon size={24} /></div>
+                <div className="quick-action-copy">
+                  <strong>{label}</strong>
+                  <span>{detail}</span>
                 </div>
-              </div>
-              <ul>
-                <li><span className="dot gold"></span>Demand Deposits <b>42%</b></li>
-                <li><span className="dot teal"></span>Savings <b>24%</b></li>
-                <li><span className="dot purple"></span>Investments <b>18%</b></li>
-                <li><span className="dot blue"></span>Loans & Credit <b>10%</b></li>
-              </ul>
+                <ArrowRight className="quick-arrow" size={19} />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <aside className="goal-card">
+          <div className="goal-illustration"><Sparkles size={30} /></div>
+          <span className="eyebrow">Aureus Savings</span>
+          <h2>Reach your goals with confidence.</h2>
+          <p>
+            {savings
+              ? `Your High-Yield Savings earns 4.20% APY on ${usd(savings.balance)}.`
+              : "Earn 4.20% APY with High-Yield Savings."}
+          </p>
+          <button onClick={() => navigate(savings ? `/accounts/${savings.id}` : "/support")}>
+            {savings ? "View Savings" : "Ask about Savings"} <ArrowRight size={18} />
+          </button>
+        </aside>
+      </section>
+
+      <section className="dashboard-grid dashboard-section">
+        <div className="panel activity-panel">
+          <div className="section-heading-row">
+            <div>
+              <h2>Recent Activity</h2>
+              <p>Your latest transactions across all accounts.</p>
             </div>
+            <button className="text-link" onClick={() => navigate("/statements")}>
+              View All <ArrowRight size={17} />
+            </button>
           </div>
-
-          <div className="panel sync-panel">
-            <div className="sync-emblem">✓</div>
-            <h3>Zelle Sync Overview</h3>
-            <div className="sync-row"><span>Connection</span><b>Connected</b></div>
-            <div className="sync-row"><span>System</span><b>Zelle Business</b></div>
-            <div className="sync-row"><span>Last Sync</span><b>2 min ago</b></div>
-            <div className="sync-row"><span>Records</span><b>12,458</b></div>
-            <button>View Sync</button>
-          </div>
-        </section>
-
-        <section className="bottom-grid">
-          <div className="panel transactions-panel">
-            <div className="panel-header">
-              <h3>Recent Transactions</h3>
-              <button>View All</button>
+          {txns === null ? (
+            <p className="muted-label">Loading…</p>
+          ) : txns.length === 0 ? (
+            <div className="empty-state">
+              <p>No transactions yet</p>
+              <span>Your recent activity will show up here.</span>
             </div>
-
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Account</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((tx) => (
-                  <tr key={`${tx.description}-${tx.time}`}>
-                    <td>
-                      <strong>{tx.date}</strong>
-                      <span>{tx.time}</span>
-                    </td>
-                    <td>{tx.description}</td>
-                    <td>{tx.account}</td>
-                    <td className={tx.type === "income" ? "positive" : "negative"}>{tx.amount}</td>
-                    <td><span className="status-pill">{tx.status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="panel quick-actions">
-            <div className="panel-header">
-              <h3>Quick Actions</h3>
+          ) : (
+            <div className="activity-list">
+              {txns.map((t) => {
+                const income = INCOME_TYPES.includes(t.transaction_type);
+                return (
+                  <button key={t.id} className="activity-row" onClick={() => navigate(`/accounts/${t.account_id}`)}>
+                    <div className="merchant-icon">{(t.description || "?").charAt(0).toUpperCase()}</div>
+                    <div className="activity-copy">
+                      <strong>{t.description}</strong>
+                      <span>
+                        {fmtDate(t.created_at)} · {capitalize(t.transaction_type.replace("_", " "))} · {capitalize(t.account_type)} •••• {t.account_number.slice(-4)}
+                      </span>
+                    </div>
+                    <strong className={`activity-amount ${income ? "positive" : ""}`}>
+                      {income ? "+" : "-"}{usd(t.amount)}
+                    </strong>
+                    <ChevronRight size={19} />
+                  </button>
+                );
+              })}
             </div>
-            <button>New Payment</button>
-            <button>Create Invoice</button>
-            <button>Account Transfer</button>
-            <button>Download Report</button>
+          )}
+        </div>
+
+        <div className="side-stack">
+          <Insight month={thisMonth} />
+          <div className="panel assistant-card">
+            <div className="mini-title"><Bot size={19} /> AI Assistant</div>
+            <p>Have a question about your spending, a transaction, or your savings outlook?</p>
+            <button onClick={openChat}>Ask Aureus Assistant <ArrowRight size={18} /></button>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function AccountCard({ account, onOpen }) {
+  const s = ACCOUNT_STYLE[account.account_type] ?? {
+    name: capitalize(account.account_type), icon: Landmark, tone: "gold", subtitle: "Available balance",
+  };
+  const Icon = s.icon;
+  return (
+    <button className={`account-card ${s.tone}`} onClick={onOpen}>
+      <div className="account-card-top">
+        <div className="account-title-group">
+          <span className="account-icon"><Icon size={24} /></span>
+          <div>
+            <h3>{s.name}</h3>
+            <p>•••• {account.account_number.slice(-4)}</p>
+          </div>
+        </div>
+        <ChevronRight size={22} />
+      </div>
+      <strong>{usd(account.balance)}</strong>
+      <span className="account-subtitle">{s.subtitle}</span>
+    </button>
+  );
+}
+
+// This month's income vs spending, from the current (in-progress) statement.
+function Insight({ month }) {
+  if (!month) {
+    return (
+      <div className="panel insight-card">
+        <div className="mini-title"><Sparkles size={18} /> Financial Insight</div>
+        <p className="muted-label">Insights appear once you have activity this month.</p>
+      </div>
+    );
+  }
+  const income = Number(month.total_credits);
+  const spent = Number(month.total_debits);
+  const ahead = income >= spent;
+  const pct = income > 0 ? Math.min(100, Math.round((spent / income) * 100)) : 100;
+  return (
+    <div className="panel insight-card">
+      <div className="mini-title"><Sparkles size={18} /> Financial Insight · {fmtMonth(month.month, { month: "long" })}</div>
+      <div className="insight-content">
+        <div className={`insight-icon ${ahead ? "" : "warn"}`}>{ahead ? <TrendingUp size={26} /> : <TrendingDown size={26} />}</div>
+        <div>
+          <strong className={ahead ? "" : "warn"}>
+            {ahead ? `You're ${usd(income - spent)} ahead this month` : `Spending is ${usd(spent - income)} above income`}
+          </strong>
+          <p>{usd(spent)} spent of {usd(income)} received so far.</p>
+        </div>
+      </div>
+      <div className="progress-track" title={`${pct}% of income spent`}>
+        <div className={`progress-fill ${ahead ? "" : "warn"}`} style={{ width: `${pct}%` }} />
+      </div>
+      <small className="progress-label">{pct}% of this month’s income spent</small>
     </div>
+  );
+}
+
+export function TransactionTable({ txns, showAccount = true }) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          {showAccount && <th>Account</th>}
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {txns.map((tx) => {
+          const income = INCOME_TYPES.includes(tx.transaction_type);
+          return (
+            <tr key={tx.id}>
+              <td>{fmtDate(tx.created_at)}</td>
+              <td>
+                {tx.description}
+                <span>{capitalize(tx.transaction_type.replace("_", " "))}</span>
+              </td>
+              {showAccount && (
+                <td>
+                  {capitalize(tx.account_type)}
+                  <span>•••• {tx.account_number.slice(-4)}</span>
+                </td>
+              )}
+              <td className={income ? "positive" : "negative"}>
+                {income ? "+" : "-"}
+                {usd(tx.amount)}
+              </td>
+              <td><span className="status-pill">{tx.status}</span></td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
 

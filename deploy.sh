@@ -46,4 +46,4 @@ fi
 
 echo "==> Containers on the box:"
 ssh -i "$KEY" "$HOST" "cd ~/$REMOTE_DIR && docker compose ps"
-echo "==> Done. https://aerial-bank.duckdns.org"
+echo "==> Done. https://aureus-bank.duckdns.org"

@@ -14,10 +14,18 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite:///./bank101.db"
 
+    # Redis (presence, caching, rate limits). Empty = Redis features off (e.g. local dev).
+    REDIS_URL: str = ""
+
     # Security / auth
     JWT_SECRET_KEY: str = "CHANGE_ME_IN_PRODUCTION"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    # Support chat (Gemini). The key lives in the `banking-app` Secrets Manager secret
+    # under the name SUPPORT_CHAT_KEY; fetch-secrets.sh writes it into .env. Empty = chat off.
+    SUPPORT_CHAT_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.5-flash-lite"
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,0 +1,158 @@
+.bank-card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1.586; /* ISO/IEC 7810 ID-1 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 24px;
+  overflow: hidden;
+  border-radius: 20px;
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(21, 34, 60, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: filter 0.3s;
+}
+
+/* Soft light sweep across the card face */
+.bank-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% -10%, rgba(255, 255, 255, 0.28), transparent 45%),
+    radial-gradient(circle at -10% 110%, rgba(255, 255, 255, 0.12), transparent 40%);
+  pointer-events: none;
+}
+
+.bank-card.debit {
+  background: linear-gradient(135deg, #0f3a66 0%, #155e96 45%, #1fa4a0 100%);
+}
+
+.bank-card.credit {
+  color: #2b1d05;
+  background: linear-gradient(135deg, #a77a2c 0%, #f4d98a 45%, #c9973f 100%);
+}
+
+.bank-card.frozen {
+  filter: grayscale(0.85) brightness(0.7);
+}
+
+.bank-card-top,
+.bank-card-bottom {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.bank-card-brand strong {
+  display: block;
+  font-family: Georgia, serif;
+  letter-spacing: 0.22em;
+  font-size: 18px;
+}
+
+.bank-card-brand span {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.contactless {
+  transform: rotate(0deg);
+  font-weight: 700;
+  letter-spacing: -2px;
+  opacity: 0.8;
+}
+
+.chip {
+  position: relative;
+  width: 46px;
+  height: 34px;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  padding: 4px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #e8d08a, #b8913c);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.chip i {
+  border-radius: 2px;
+  border: 1px solid rgba(90, 62, 10, 0.35);
+}
+
+.bank-card-number {
+  position: relative;
+  font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: clamp(16px, 2.2vw, 22px);
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.bank-card.credit .bank-card-number {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.bank-card-bottom {
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.bank-card-bottom small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.bank-card-bottom span {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.bank-card-bottom > div:first-child {
+  flex: 1;
+}
+
+.network.visa {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: 0.02em;
+}
+
+.network.mastercard {
+  display: flex;
+}
+
+.network.mastercard i {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #eb001b;
+}
+
+.network.mastercard i + i {
+  margin-left: -12px;
+  background: #f79e1b;
+  mix-blend-mode: screen;
+}
+
+.frozen-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: #d8f3ff;
+  background: rgba(10, 30, 50, 0.85);
+  border: 1px solid rgba(160, 220, 255, 0.5);
+  font-weight: 700;
+}

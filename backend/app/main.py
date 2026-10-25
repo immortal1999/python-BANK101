@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.core.redis import redis_status
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -16,8 +17,8 @@ def root():
 
 @app.get("/health")
 def health():
-    """Health check endpoint for load balancers."""
-    return {"status": "healthy"}
+    """Health check endpoint for load balancers. Redis is reported but never fails the check."""
+    return {"status": "healthy", "redis": redis_status()}
 
 
 # All API v1 routes (auth, and future resources) live under /api/v1

@@ -9,7 +9,7 @@ from sqlalchemy import pool
 from alembic import context
 
 # import models
-from app.models import user,account,invoice,payment,transaction, audit_log
+from app.models import user,account,invoice,payment,transaction, audit_log, support_ticket
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.provisioning import ensure_demo_accounts
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.database import get_db
 from app.models.user import User
@@ -35,6 +36,12 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
         hashed_password=hash_password(payload.password),  # never store plaintext
     )
     db.add(user)
+    db.flush()  # assigns user.id without committing yet (still one transaction)
+
+    # Demo provisioning: funded checking + savings with 12 months of history, standing in
+    # for the accounts a branch would have opened in person.
+    ensure_demo_accounts(db, user.id)
+
     db.commit()
     db.refresh(user)
     return user
@@ -56,6 +63,10 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is inactive",
         )
+    # Backfill the demo accounts for users created before both were provisioned.
+    if ensure_demo_accounts(db, user.id):
+        db.commit()
+
     token = create_access_token(subject=user.id)
     return TokenResponse(access_token=token)
 
